@@ -6,7 +6,7 @@
     .PARAMETER serverInstance
     This is the name of the source instance. It's a mandatory parameter beause it is needed to retrieve the data.
     .EXAMPLE
-    .\Set-SqlTCPProtocol -serverInstance MyServer\SQL2012
+    .\Set-SqlTCPProtocol -serverInstance Server\Instance
     .INPUTS
     .OUTPUTS
     .NOTES
@@ -15,7 +15,7 @@
 #>
 function Set-SqlTCPProtocol { 
   param (
-    [string]$serverInstance = "$(Read-Host 'Server Instance' [e.g. Server01\SQL2012])"
+    [parameter(Mandatory=$true,ValueFromPipeline=$true)][string]$ServerInstance
   )
 
   begin {

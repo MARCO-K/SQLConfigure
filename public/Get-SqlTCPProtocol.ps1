@@ -1,6 +1,22 @@
-﻿function Get-SqlTCPProtocol { 
+﻿<#
+    .SYNOPSIS
+    Get-SqlTCPProtocol
+    .DESCRIPTION
+    Gets the TCP protocol status
+    .PARAMETER serverInstance
+    This is the name of the source instance. It's a mandatory parameter beause it is needed to retrieve the data.
+    .EXAMPLE
+     Get-SqlTCPProtocol -serverInstance Server\Instance
+    .INPUTS
+    .OUTPUTS
+	bool value for status
+    .NOTES
+    .LINK
+		
+#>
+function Get-SqlTCPProtocol { 
   param (
-    [string]$serverInstance = "$(Read-Host 'Server Instance' [e.g. Server01\SQL2012])"
+    [parameter(Mandatory=$true,ValueFromPipeline=$true)][string]$ServerInstance
   )
 
   begin {

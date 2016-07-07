@@ -12,7 +12,7 @@
   .PARAMETER backupPath
     This is the default directory for backup files.
 	.EXAMPLE
-		.\Set-SqlDefaultFileLocations -serverInstance server01\sql2012
+		.\Set-SqlDefaultFileLocations -serverInstance Server\Instance
 	.INPUTS
 	.OUTPUTS
 		Default file locations

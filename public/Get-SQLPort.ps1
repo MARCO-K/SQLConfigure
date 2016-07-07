@@ -6,7 +6,7 @@
 	.PARAMETER serverInstance
 		This is the name of the source instance. It's a mandatory parameter beause it is needed to retrieve the data.
 	.EXAMPLE
-		.\Get-SqlPort -serverInstance Server01\sql2012
+		Get-SqlPort -serverInstance Server\Instance
 	.INPUTS
 	.OUTPUTS
 		SQL Server Port #
@@ -83,4 +83,5 @@ function Get-SQLPort {
       }
     }
   }
+  end { $message = "Getting port for `"$serverInstance`".";  }
 }
