@@ -42,7 +42,7 @@ function Get-SqlDefaultFileLocations {
         LogPath = $logLoc
         BackupLoc = $backupLoc
       }
-      Write-Output $defaultLoc
+      return $defaultLoc
     }
     catch [Exception] {
       Write-Error $Error[0]
