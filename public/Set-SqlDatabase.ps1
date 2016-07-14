@@ -45,10 +45,10 @@
       Set-Database -ServerInstance 'DEFREON0830\S60039' -dbname 'test' -recovery 'Full' -growth 10240 -GrowthType KB -Verbose -UpdateCompatibilityLevel
 	#>
 	#requires -Version 3
-function Set-Database { 
+function Set-SqlDatabase { 
   param(
         [parameter(Mandatory=$true,ValueFromPipeline=$True)][string]$ServerInstance,
-    [parameter(Mandatory=$true,ValueFromPipeline=$True)][string]$dbname, 
+		[parameter(Mandatory=$true,ValueFromPipeline=$True)][string]$dbname, 
         [ValidateSet('Full','Simple','Bulklogged')][string]$recovery,
         [switch]$UpdateCompatibilityLevel,
         [int]$growth,
