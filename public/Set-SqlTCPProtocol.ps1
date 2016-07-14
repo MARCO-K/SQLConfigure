@@ -40,7 +40,7 @@ function Set-SqlTCPProtocol {
       $Tcp.IsEnabled = $true
       $Tcp.Alter()
 		
-      Write-Output $Tcp
+      return $Tcp
     }
     catch [Exception] {
       Write-Error $Error[0]
