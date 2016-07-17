@@ -21,7 +21,7 @@ function Get-SQLVersion {
 	)
 
 	begin {
-		[void][reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
+		$null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
 		$server = new-object Microsoft.SqlServer.Management.Smo.Server $serverInstance
 	}
 	process {
@@ -32,7 +32,7 @@ function Get-SQLVersion {
 		
 			return $versionInfo
 		}
-		catch [Exception] {
+		catch{
 			Write-Error $Error[0]
 			$err = $_.Exception
 			while ( $err.InnerException ) {

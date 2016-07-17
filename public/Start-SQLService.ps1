@@ -21,7 +21,7 @@ function Start-SQLService {
     [Parameter(Mandatory=$true,ValueFromPipeline=$true)][ValidateSet( 'sql','agent','browser')][String[]]$services
   )
   begin {
-    [void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
+    $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
     $Server = New-Object Microsoft.SqlServer.Management.Smo.Server $serverInstance
     $ver = $Server.Information.VersionMajor 
 
@@ -55,7 +55,7 @@ function Start-SQLService {
         else { write-verbose "Service $ServiceName is already running" }
       }
     }
-    catch [Exception] {
+    catch{
       Write-Error $Error[0]
       $err = $_.Exception
       while ( $err.InnerException ) {

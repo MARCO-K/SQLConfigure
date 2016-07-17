@@ -25,7 +25,7 @@ function Get-SqlConfiguration
     )
 
     begin {
-        [void][reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
+        $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
         
         if($filter)
         {
@@ -62,7 +62,7 @@ function Get-SqlConfiguration
             }
             return $SystemConfiguration
         }
-        catch [Exception] 
+        catch
         {
             Write-Error -Message $Error[0]
             $err = $_.Exception

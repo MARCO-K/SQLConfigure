@@ -1,20 +1,20 @@
-#requires -Version 2
+﻿#requires -Version 3
 <#
         .SYNOPSIS
-        Get-SqlConnectionString
+        Get-SqlLogfile
         .DESCRIPTION
-        Get ConnectionString for a SQL Server instance
+        Get the number of logfiles for a SQL Server instance
         .PARAMETER serverInstance
         This is the name of the source instance. It's a mandatory parameter beause it is needed to retrieve the data.
         .EXAMPLE
-        Get-SQLRecommendedMemory -serverInstance Server\Instance.
+        Get-SqlLogfile -serverInstance Server\Instance.
         .INPUTS
         .OUTPUTS
         ConnectionString 
         .NOTES
         .LINK
 #>
-function Get-SqlConnectionString 
+function Get-SqlLogfile 
 {
     param (
         [Parameter(Mandatory,ValueFromPipeline = $true)][string]$ServerInstance
@@ -27,11 +27,11 @@ function Get-SqlConnectionString
     process {
         try 
         {
-            Write-Verbose -Message 'Get SQL Server ConnectionString...'
+            Write-Verbose -Message 'Get number of SqlLogfiles ...'
             $server = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server -ArgumentList $ServerInstance
-            $connection = $server.ConnectionContext.ConnectionString
-		
-            return $connection
+            $logfiles = $server.NumberOfLogFiles
+
+            return $logfiles
         }
         catch
         {

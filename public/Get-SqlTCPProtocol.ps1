@@ -20,8 +20,8 @@ function Get-SqlTCPProtocol {
   )
 
   begin {
-    [void][reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
-    [void][reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement')
+    $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
+    $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement')
   }
   process {
     try {
@@ -41,7 +41,7 @@ function Get-SqlTCPProtocol {
       $check = $Tcp.IsEnabled 
       return $check
     }
-    catch [Exception] {
+    catch{
       Write-Error $Error[0]
       $err = $_.Exception
       while ( $err.InnerException ) {

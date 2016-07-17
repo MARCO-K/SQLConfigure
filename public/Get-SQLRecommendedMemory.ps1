@@ -21,7 +21,7 @@ function Get-SQLRecommendedMemory {
   )
 
   begin {
-    [void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
+    $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
     $server = New-Object Microsoft.SqlServer.Management.Smo.Server $serverInstance
     $sqlmemory = $server.Configuration.MaxServerMemory.ConfigValue
     $totalmemory = $server.PhysicalMemory
@@ -39,7 +39,7 @@ function Get-SQLRecommendedMemory {
       else {$sql_mem = $totalmemory}
       return $sql_mem
     }
-    catch [Exception] {
+    catch{
       Write-Error $Error[0]
       $err = $_.Exception
       while ( $err.InnerException ) {

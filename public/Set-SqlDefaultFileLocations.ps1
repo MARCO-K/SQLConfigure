@@ -28,7 +28,7 @@ function Set-SqlDefaultFileLocations {
   )
 
   begin {
-    [void][reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
+    $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
   }
   process {
     try {
@@ -57,7 +57,7 @@ function Set-SqlDefaultFileLocations {
       $server.Settings.Alter()
 
     }
-    catch [Exception] {
+    catch{
       Write-Error $Error[0]
       $err = $_.Exception
       while ( $err.InnerException ) {

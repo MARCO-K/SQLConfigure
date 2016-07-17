@@ -31,7 +31,7 @@ function Set-SqlConfiguration
     )
 
     begin {
-        [void][reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
+        $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
        
 
     }
@@ -64,7 +64,7 @@ function Set-SqlConfiguration
 
             return $server.Configuration.$config
         }
-        catch [Exception] 
+        catch
         {
             Write-Error -Message $Error[0]
             $err = $_.Exception

@@ -28,7 +28,7 @@ function Set-SQLMemory {
   ) 
 
   Begin {
-    [void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
+    $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
     $server = New-Object Microsoft.SqlServer.Management.Smo.Server $serverInstance
     $max = $server.Configuration.MaxServerMemory.ConfigValue
     $min = $server.Configuration.MinServerMemory.ConfigValue
@@ -50,7 +50,7 @@ function Set-SQLMemory {
       $server.Configuration.Alter()
       Write-Verbose "MaxServerMemory ($maxMem) and MinServerMemory ($minMem) for `"$serverInstance`"."
     }
-        catch [Exception] {
+        catch{
       Write-Error $Error[0]
       $err = $_.Exception
       while ( $err.InnerException ) {

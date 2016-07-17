@@ -30,7 +30,7 @@ function Set-SQLPort {
       $instance = 'MSSQLSERVER'
     }
 	
-    [void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
+    $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
     $Server = New-Object Microsoft.SqlServer.Management.Smo.Server $serverInstance
     $ver = $Server.Information.VersionMajor
      
@@ -61,7 +61,7 @@ function Set-SQLPort {
       $dynport.SetStringValue('') | Out-Null
       Write-verbose "Port changed to $Port - Service has to be restarted"
     }
-    catch [Exception] {
+    catch{
       Write-Error $Error[0]
       $err = $_.Exception
       while ( $err.InnerException ) {

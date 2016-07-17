@@ -19,8 +19,8 @@ function Set-SqlTCPProtocol {
   )
 
   begin {
-    [void][reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
-    [void][reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement')
+    $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
+    $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement')
   }
   process {
     try {
@@ -42,7 +42,7 @@ function Set-SqlTCPProtocol {
 		
       return $Tcp
     }
-    catch [Exception] {
+    catch{
       Write-Error $Error[0]
       $err = $_.Exception
       while ( $err.InnerException ) {
