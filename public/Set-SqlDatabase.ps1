@@ -44,7 +44,7 @@
 
         Set-SQLDatabase -ServerInstance 'server\instance' -dbname 'test' -recovery 'Full' -growth 10240 -GrowthType KB -Verbose -UpdateCompatibilityLevel
 #>
-#requires -Version 2
+#requires -Version 3
 function Set-SqlDatabase 
 { 
     param(
