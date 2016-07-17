@@ -8,7 +8,7 @@
     .EXAMPLE
     Get-SQLRecommendedMemory -serverInstance Server\Instance.
 	.EXAMPLE
-		.\Get-ISqlServerVersion -serverInstance Server\Instance
+		.\Get-SQLVersion -serverInstance Server\Instance
 	.INPUTS
 	.OUTPUTS
 		Version Object

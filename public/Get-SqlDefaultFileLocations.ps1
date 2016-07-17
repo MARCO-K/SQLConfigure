@@ -7,7 +7,7 @@
         .PARAMETER serverInstance
         SQL Server instance
         .EXAMPLE
-        .\Get-ISqlDefaultFileLocations -serverInstance Server\Instance
+        .\Get-SqlDefaultFileLocations -serverInstance Server\Instance
         .INPUTS
         .OUTPUTS
         Default file locations
