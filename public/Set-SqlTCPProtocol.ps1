@@ -1,55 +1,62 @@
-﻿<#
-    .SYNOPSIS
-    Set-SqlTCPProtocol
-    .DESCRIPTION
-    Enables the TCP protocol
-    .PARAMETER serverInstance
-    This is the name of the source instance. It's a mandatory parameter beause it is needed to retrieve the data.
-    .EXAMPLE
-    .\Set-SqlTCPProtocol -serverInstance Server\Instance
-    .INPUTS
-    .OUTPUTS
-    .NOTES
-    .LINK
+﻿#requires -Version 3
+<#
+        .SYNOPSIS
+        Set-SqlTCPProtocol
+        .DESCRIPTION
+        Enables the TCP protocol
+        .PARAMETER serverInstance
+        This is the name of the source instance. It's a mandatory parameter beause it is needed to retrieve the data.
+        .EXAMPLE
+        .\Set-SqlTCPProtocol -serverInstance Server\Instance
+        .INPUTS
+        .OUTPUTS
+        .NOTES
+        .LINK
 		
 #>
-function Set-SqlTCPProtocol { 
-  param (
-    [parameter(Mandatory=$true,ValueFromPipeline=$true)][string]$ServerInstance
-  )
+function Set-SqlTCPProtocol 
+{ 
+    param (
+        [parameter(Mandatory,ValueFromPipeline = $true)][string]$ServerInstance
+    )
 
-  begin {
-    $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
-    $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement')
-  }
-  process {
-    try {
-      $wmi = new-object Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer
+    begin {
+        $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
+        $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.SqlWmiManagement')
+    }
+    process {
+        try 
+        {
+            $wmi = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Wmi.ManagedComputer
 
-      $server = $serverInstance.ToUpper().Split('\')[0]
-      $instance = $serverInstance.ToUpper().Split('\')[1]
+            $server = $ServerInstance.ToUpper().Split('\')[0]
+            $instance = $ServerInstance.ToUpper().Split('\')[1]
 
-      if($instance -eq $null) {
-        $instance = 'MSSQLSERVER'
-      }
+            if($instance -eq $null) 
+            {
+                $instance = 'MSSQLSERVER'
+            }
 
-      $ProtocolUri = "ManagedComputer[@Name='" + $server + "']/ServerInstance[@Name='"+ $instance + "']/ServerProtocol"
-      $tcp = $wmi.getsmoobject($ProtocolUri + "[@Name='Tcp']")
+            $ProtocolUri = "ManagedComputer[@Name='" + $server + "']/ServerInstance[@Name='"+ $instance + "']/ServerProtocol"
+            $tcp = $wmi.getsmoobject($ProtocolUri + "[@Name='Tcp']")
 
-      # Enable the TCP protocol on the default instance.
-      $Tcp.IsEnabled = $true
-      $Tcp.Alter()
+            # Enable the TCP protocol on the default instance.
+            $tcp.IsEnabled = $true
+            $tcp.Alter()
 		
-      return $Tcp
+            return $tcp
+        }
+        catch
+        {
+            Write-Error -Message $Error[0]
+            $err = $_.Exception
+            while ( $err.InnerException ) 
+            {
+                $err = $err.InnerException
+                Write-Output -InputObject $err.Message
+            }
+        }
     }
-    catch{
-      Write-Error $Error[0]
-      $err = $_.Exception
-      while ( $err.InnerException ) {
-        $err = $err.InnerException
-        Write-Output $err.Message
-      }
+    end { $message = "TCP porotcol enabled on `"$ServerInstance`"."
     }
-  }
-  end { $message = "TCP porotcol enabled on `"$ServerInstance`".";  }
 }

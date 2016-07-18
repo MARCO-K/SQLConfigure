@@ -10,10 +10,10 @@
         This paramter can be a single service or a list of services.
         Allowed values are: 'sql','agent','anaylsis','report','browser'.
         .EXAMPLE
-        Get-SqlServiceStart -serverInstance Server\Instance -services 'sql','agent','report' -Verbose
+        Get-SqlServiceStart -serverInstance Server\Instance -services 'sql','agent'
         .INPUTS
         .OUTPUTS
-        service object 
+        SQL service object 
         .NOTES
         .LINK
 #>
@@ -46,34 +46,78 @@ function Get-SqlServiceStart
             {
                 switch ($service)
                 {
-                'agent' { if ($instance -eq  'SQLSERVERAGENT') { $searchstrg = $instance } else { $searchstrg = 'SQLAgent$' + $instance }}
-                'analysis' { if ($instance -eq  'MSOLAP') { $searchstrg = $instance } else { $searchstrg = 'MSOLAP$' + $instance }}
-                'report'  { if ($instance -eq  'ReportServer') { $searchstrg = $instance } else { $searchstrg = 'ReportServer$' + $instance }}
-                'sql'   { if ($instance -eq 'MSSQLSERVER') { $searchstrg = $instance } else { $searchstrg = 'MSSQL$' + $instance }}
-                'browser'  { $searchstrg = 'SQLBrowser'}
+                    'agent' 
+                    {
+                        if ($instance -eq 'SQLSERVERAGENT') 
+                        {
+                            $searchstrg = $instance 
+                        }
+                        else 
+                        {
+                            $searchstrg = 'SQLAgent$' + $instance 
+                        }
+                    }
+                    'analysis' 
+                    {
+                        if ($instance -eq 'MSOLAP') 
+                        {
+                            $searchstrg = $instance 
+                        }
+                        else 
+                        {
+                            $searchstrg = 'MSOLAP$' + $instance 
+                        }
+                    }
+                    'report'  
+                    {
+                        if ($instance -eq 'ReportServer') 
+                        {
+                            $searchstrg = $instance 
+                        }
+                        else 
+                        {
+                            $searchstrg = 'ReportServer$' + $instance 
+                        }
+                    }
+                    'sql'   
+                    {
+                        if ($instance -eq 'MSSQLSERVER') 
+                        {
+                            $searchstrg = $instance 
+                        }
+                        else 
+                        {
+                            $searchstrg = 'MSSQL$' + $instance 
+                        }
+                    }
+                    'browser'  
+                    {
+                        $searchstrg = 'SQLBrowser'
+                    }
                 }
 
                 $SqlService = (Get-Service | Where-Object -FilterScript {
-                        $_.name -like $searchstrg 
+                        $_.name -like $searchstrg
                 }).Name
 
                 $startmode = Get-WmiObject -Class Win32_Service -ComputerName $serverName |
                 Where-Object -FilterScript {
                     $_.name -eq $SqlService
                 } |
-                Select-Object -Property Name, Displayname, StartMode, State
+                Select-Object -Property Name, Displayname, StartMode, State, Startname
 
                 New-Object -TypeName PSObject -Property ([Ordered]@{
-                        'Name'      = $startmode.Name
-                        'Displayname' = $startmode.Displayname
-                        'StartMode' = $startmode.StartMode
-                        'State'     = $startmode.Sta
+                        'Name'         = $startmode.Name
+                        'Displayname'  = $startmode.Displayname
+                        'StartMode'    = $startmode.StartMode
+                        'State'        = $startmode.State
+                        'ServiceAccount' = $startmode.Startname
                 })
             }
       
             return $servicemode
         }
-        catch
+        catch [Exception] 
         {
             Write-Error -Message $Error[0]
             $err = $_.Exception
