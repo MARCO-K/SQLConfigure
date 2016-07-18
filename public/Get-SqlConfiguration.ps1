@@ -26,31 +26,32 @@ function Get-SqlConfiguration
 
     begin {
         $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
-        
-        if($filter)
-        {
-            $configs = $server.Configuration |
-            Get-Member -MemberType Properties |
-            Where-Object -FilterScript {
-                $filter.Contains($_.Name)
-            }
-        }
-        else
-        {
-            $configs = $server.Configuration |
-            Get-Member -MemberType Properties |
-            Where-Object -FilterScript {
-                $_.Name -ne 'Properties'
-            }
-        }
+
     }
     process {
         try 
         {
             Write-Verbose -Message 'Get SQL Server configuration...'
             $server = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server -ArgumentList $ServerInstance
-            
-            $SystemConfiguration =
+                    
+            if($filter)
+            {
+                $configs = $server.Configuration |
+                Get-Member -MemberType Properties |
+                Where-Object -FilterScript {
+                    $filter.Contains($_.Name)
+                }
+            }
+            else
+            {
+                $configs = $server.Configuration |
+                Get-Member -MemberType Properties |
+                Where-Object -FilterScript {
+                    $_.Name -ne 'Properties'
+                }
+            }
+
+            $SystemConfiguration = 
             foreach($config in $configs)
             {
                 New-Object -TypeName PSObject -Property ([Ordered]@{
