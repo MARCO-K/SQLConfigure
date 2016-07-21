@@ -1,4 +1,4 @@
-#requires -Version 3
+#requires -Version 2
 <#
         .SYNOPSIS
         Get-SqlMaxMemory
@@ -19,11 +19,11 @@
 function Get-SqlMaxMemory 
 {
     param (
-        [Parameter(Mandatory = $true,ValueFromPipeline = $true)][string]$ServerInstance
+        [Parameter(Mandatory,ValueFromPipeline = $true)][string]$ServerInstance
     )
 
     begin {
-        $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
+        $null = [Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
     }
     process {
         try 
