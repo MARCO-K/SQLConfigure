@@ -38,8 +38,8 @@ Function Get-DiskSpace
 			
         try
         {
-            $ipaddr = (Test-Connection $serverName -Count 1).Ipv4Address | Select-Object -First 1
-            $disks = Get-WmiObject -ComputerName $ipaddr -Query $query | Sort-Object -Property Name
+            write-verbose "Collection disk information on `"$serverName`"."
+            $disks = Get-WmiObject -ComputerName $serverName -Query $query | Sort-Object -Property Name
         }
         catch
         {
