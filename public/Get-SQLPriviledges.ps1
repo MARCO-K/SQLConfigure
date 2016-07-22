@@ -36,12 +36,12 @@ Function Get-SQLPriviledges
         $lsps = @('SeManageVolumePrivilege', 'SeServiceLogonRight', 'SeAssignPrimaryTokenPrivilege ', 'SeChangeNotifyPrivilege', 'SeLockMemoryPrivilege', 'SeIncreaseQuotaPrivilege', 'SeIncreaseBasePriorityPrivilege', 'SeIncreaseWorkingSetPrivilege')
     }
     Process {
-        $serverName = $serverInstance.Split('\')[0]
-        Write-Verbose -Message "Getting wWindow priliedges on $serverName"
+		if($serverInstance -contains '\') {$serverInstance= $serverInstance.Split('\')[0]}
+        Write-Verbose -Message "Getting wWindow priliedges on $serverInstance"
         # Find out the SQL Server services installed on the machine
         if(!($ServiceAccounts)) 
         {
-            $SqlService = (Get-WmiObject -ComputerName $serverName -Query "SELECT * FROM Win32_Service WHERE PathName LIKE '%sqlservr%'").StartName
+            $SqlService = (Get-WmiObject -ComputerName $serverInstance -Query "SELECT * FROM Win32_Service WHERE PathName LIKE '%sqlservr%'").StartName
         }
         else 
         {
