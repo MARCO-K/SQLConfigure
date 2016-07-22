@@ -2,22 +2,21 @@
 Function Get-DiskSpace
 {
     <#
-    .SYNOPSIS
-    Displays Disk information for all local drives on a server
+            .SYNOPSIS
+            Displays Disk information for all local drives on a server
 	
-    .DESCRIPTION
-    Returns a custom object with Server name, name of disk, label of disk, total size, free size and percent free.
-    .PARAMETER serverInstance
-    This is the name of the source instance. 
-    It's a mandatory parameter beause it is needed to retrieve the data.
-    .PARAMETER Unit
-    Display the disk space information in a specific unit. 
-    Valid values incldue 'KB', 'MB', 'GB', 'TB', and 'PB'. Default is GB.
-    .NOTES 
-    .EXAMPLE
-    Get-DiskSpace -ComputerName sqlserver
-
-    Get-DiskSpace -ComputerName server1, server2, server3 -Unit MB
+            .DESCRIPTION
+            Returns a custom object with Server name, name of disk, label of disk, total size, free size and percent free.
+            .PARAMETER serverInstance
+            This is the name of the source instance. 
+            It's a mandatory parameter beause it is needed to retrieve the data.
+            .PARAMETER Unit
+            Display the disk space information in a specific unit. 
+            Valid values incldue 'KB', 'MB', 'GB', 'TB', and 'PB'. Default is GB.
+            .NOTES 
+            .EXAMPLE
+            Get-DiskSpace -serverInstance sqlserver
+            Get-DiskSpace -serverInstance server1, server2, server3 -Unit MB
     #>
     [CmdletBinding()]
     Param (
@@ -33,17 +32,26 @@ Function Get-DiskSpace
 			
     }
     process{
-        $serverName = $ServerInstance.Split('\')[0]
+        if($serverInstance -contains '\') 
+        {
+            $serverInstance = $serverInstance.Split('\')[0]
+        }
         $alldisks = @()
 			
         try
         {
-            write-verbose "Collection disk information on `"$serverName`"."
-            $disks = Get-WmiObject -ComputerName $serverName -Query $query | Sort-Object -Property Name
+            Write-Verbose -Message "Collection disk information on `"$serverInstance`"."
+            $disks = Get-WmiObject -ComputerName $serverInstance -Query $query | Sort-Object -Property Name
         }
         catch
         {
-            throw "Can't connect to $serverName"
+            Write-Error -Message $Error[0]
+            $err = $_.Exception
+            while ( $err.InnerException ) 
+            {
+                $err = $err.InnerException
+                Write-Output -InputObject $err.Message
+            }
         }
 			
         foreach ($disk in $disks)
@@ -55,7 +63,7 @@ Function Get-DiskSpace
                 $percentfree = '{0:n2}' -f (($disk.Freespace / $disk.Capacity) * 100)
 					
                 $alldisks += [PSCustomObject]@{
-                    Server      = $serverName
+                    Server      = $serverInstance
                     Name        = $disk.Name
                     Label       = $disk.Label
                     "SizeIn$Unit" = $total
@@ -71,6 +79,6 @@ Function Get-DiskSpace
 		
     END
     {
-        write-verbose "Disk information collected on `"$serverName`"."
+        Write-Verbose -Message "Disk information collected on `"$serverInstance`"."
     }
 }
