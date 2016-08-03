@@ -73,7 +73,9 @@ Function Get-DiskInfo
       })
     }
     $diskinfo |
-    Sort-Object -Property Server, Name      
+    Sort-Object -Property Server, Name |
+    Format-Table
+      
   }
 
         
