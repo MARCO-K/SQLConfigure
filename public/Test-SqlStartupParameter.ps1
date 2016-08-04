@@ -1,41 +1,88 @@
-﻿function Test-SqlStartupParameter
+﻿#requires -Version 3
+function Test-SqlStartupParameter
 {
+  <#
+      .SYNOPSIS
+      Test a StartupParameter for a SQL instance.
+
+      .DESCRIPTION
+      This function will test if a given StartupParameters for a SQL instance is set in registry.
+
+      .PARAMETER serverInstance
+      This is the name of the source instance. 
+      It's a mandatory parameter beause it is needed to retrieve the data.
+      
+      .PARAMETER startparameter
+      This is paramter value which will be tested. 
+      It's a mandatory parameter besause it is needed to retrieve the data.
+      
+      .OUTPUT
+      True or false if startparamter exists. 
+
+      .EXAMPLE
+      Get-SqlStartupParameter -serverInstance 'server\instance'
+      .LINK
+      .NOTES
+  #>
+  
   [CmdletBinding()]
   param(
     [Parameter(Mandatory,ValuefromPipeline = $true,ValueFromPipelineByPropertyName = $true)]
     [String]$serverInstance,
-    [string]$StartupParameter)
-
-  begin {}
+    [Parameter(Mandatory, ValuefromPipeline = $true, ValueFromPipelineByPropertyName = $true)][string]$startparameter
+  )
+    
+  begin {
+    $HKLM = 2147483650
+    $reg = [wmiclass]'\\.\root\default:StdRegprov'
+    $key = 'SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL'
+  }
   process  
+  {
+    Try 
     {
-    $reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $env.ComputerName)
+      $serverName = $serverInstance.Split('\')[0]
+      $instanceName = $serverInstance.Split('\')[1]
 
-    $regKey= $reg.OpenSubKey("SOFTWARE\\Microsoft\\Microsoft SQL Server\\Instance Names\\SQL" )
+      if ($instanceName -eq $null) 
+      {
+        $instanceName = 'MSSQLSERVER'
+      }
+      $instanceRegName = $reg.GetStringValue($HKLM, $key, $instanceName).sValue
 
-    foreach($instance in $regkey.GetValueNames())
-    {    
-        if($instance -eq $InstanceName)
-        { 
-            $instanceRegName =  $regKey.GetValue($instance)
 
-            $parametersKey = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$instanceRegName\MSSQLServer\Parameters"
+      $parametersKey = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$instanceRegName\MSSQLServer\Parameters"
 
-            $props = Get-ItemProperty $parametersKey
+      $props = Get-ItemProperty $parametersKey
 
-            $params = $props.psobject.properties | Where-Object{$_.Name -like 'SQLArg*'} | Select-Object Name, Value
+      $params = $props.psobject.properties |
+      Where-Object -FilterScript {
+        $_.Name -like 'SQLArg*'
+      } |
+      Select-Object -Property Name, Value |
+      Sort-Object -Property Name
 
-            
-            foreach ($param in $params)
-            {
-                if($param.Value -eq $StartupParameter)
-                {
-                    return $true
-                }
-            }
-        }
+      if ($params.Value -contains $startparameter)
+      {
+        return $true
+      }
+      else 
+      {
+        return $false 
+      }
     }
-
-    $false;
-}
+    catch
+    {
+      Write-Error -Message $Error[0]
+      $err = $_.Exception
+      while ( $err.InnerException ) 
+      {
+        $err = $err.InnerException
+        Write-Output -InputObject $err.Message
+      }
+    }
+  }
+  end {
+    Write-Verbose -Message "SqlStartupParameter collected on `"$serverInstance`"." 
+  }
 }
