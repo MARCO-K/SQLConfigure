@@ -17,11 +17,11 @@
     .NOTES
     .LINK
 #>
-function Get-SQLDatabaseInfo 
+function Get-SQLDatabaseInfo
 {
   param (
     [Parameter(Mandatory,ValueFromPipeline = $true)][string]$ServerInstance,
-  [Parameter(ValueFromPipeline = $true)][string]$dbname )
+    [Parameter(ValueFromPipeline = $true)][string]$dbname )
     
   begin {
     $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
@@ -50,15 +50,19 @@ function Get-SQLDatabaseInfo
         Write-Verbose -Message "Get database info for $db ..."
                     
         New-Object -TypeName PSObject -Property ([Ordered]@{
-            'DBName' = $db.name
-            'Status' = $db.Status
-            'IsSystem' = $db.IsSystemObject
-            'Version' = $db.Version
+            'DBName'           = $db.name
+            'Status'           = $db.Status
+            'IsSystem'         = $db.IsSystemObject
+            'RecoveryModel'    = $db.RecoveryModel
+            'CompatLevel'      = $db.CompatibilityLevel
+            'Version'          = $db.Version
+            'Collation'        = $db.Collation
+            'Owner'            = $db.Owner
         })
       }
       
 		
-      return $databaseinfo
+      $databaseinfo | Format-Table
     }
     catch
     {
