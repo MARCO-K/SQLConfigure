@@ -15,13 +15,14 @@
       .LINK
       .NOTES
   #>
-function Get-SqlTraceFlag
+function Set-SqlTraceFlag
 {
   
   [CmdletBinding()]
   param(
     [Parameter(Mandatory,ValuefromPipeline = $true,ValueFromPipelineByPropertyName = $true)]
-    [String]$serverInstance
+    [String]$serverInstance,
+    $traceflag=33226
     )
     
   begin {
@@ -33,7 +34,9 @@ function Get-SqlTraceFlag
     {
       #create an smo object for the SQL Server
       $server = New-Object -TypeName Microsoft.SqlServer.Management.Smo.Server -ArgumentList $serverInstance
-
+      $traceflag
+      $server.SetTraceFlag([int]$traceflag, $true)
+            #create an smo object for the SQL Server
       Write-Verbose -Message "Get TaceFlags on `"$serverInstance`"."
       #get the trace flag status
       $TraceFlags = $server.EnumActiveGlobalTraceFlags()
