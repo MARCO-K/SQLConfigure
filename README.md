@@ -1,7 +1,7 @@
 <snippet>
 <content>
 #SQLConfigure
-This module provides a set of function to support the configuration of an SQL instance.`
+This module provides a set of function to support the configuration of an SQL instance.
 Basically there is a pair of functions to GET and SET the different configuration parameters.
 ## Installation
 TODO: Describe the installation process
