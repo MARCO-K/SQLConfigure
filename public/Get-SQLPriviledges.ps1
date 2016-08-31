@@ -1,47 +1,57 @@
-#requires -Version 3
+#requires -Version 3.0
 Function Get-SQLPriviledges
 {
-<#
-        .SYNOPSIS
-        Displays Windows priviledges for the Service account and/or domain local group on a server.
-        .DESCRIPTION
-        Displays Windows priviledges for the Service account and/or domain local group on a server.
-        It returns the values for a defined list of local security priviledges for the accunts and groups.
-        .PARAMETER serverInstance
-        This is the name of the source instance. 
-        It's a mandatory parameter beause it is needed to retrieve the data.
-        .PARAMETER ServiceAccounts
-        A list of service accounts to check the granted permissions. 
-        If no value is set then the service account of the local instance will be used.
-        .PARAMETER DLgroup
-        A is the domain local group to check the granted permissions. 
-        If no value is set then the DL group of the service account of the local instance will be used.
-        .NOTES 
-        .EXAMPLE
-        Get-SQLPriviledges -serverInstance sqlserver -DLgroup 'doamin\SQLservers'
-        Get-DiskSpace -serverInstance server1, server2, server3
-#>
+    <#
+            .SYNOPSIS
+            Displays Windows priviledges for the Service account and/or domain local group on a server.
+            .DESCRIPTION
+            Displays Windows priviledges for the Service account and/or domain local group on a server.
+            It returns the values for a defined list of local security priviledges for the accunts and groups.
+            .PARAMETER serverInstance
+            This is the name of the source instance. 
+            It's a mandatory parameter beause it is needed to retrieve the data.
+            .PARAMETER ServiceAccounts
+            A list of service accounts to check the granted permissions. 
+            If no value is set then the service account of the local instance will be used.
+            .PARAMETER DLgroup
+            A is the domain local group to check the granted permissions. 
+            If no value is set then the DL group of the service account of the local instance will be used.
+            .NOTES 
+            .EXAMPLE
+            Get-SQLPriviledges -serverInstance sqlserver -DLgroup 'doamin\SQLservices'
+    #>
     [CmdletBinding()]
     Param (
-        [parameter(Mandatory, ValueFromPipeline = $true)][string[]]$serverInstance,
-        [parameter(ValueFromPipeline = $true)][String[]]$ServiceAccounts,
-        [parameter(ValueFromPipeline = $true)][String]$DLgroup
+        [parameter(Mandatory, ValueFromPipeline = $true)][string]$serverInstance,
+        [parameter(ValueFromPipeline = $true)][String[]]$ServiceAccounts = $null,
+        [parameter(ValueFromPipeline = $true)][String]$DLgroup = $null
     )
     Begin {
         # Export the secpol privileges on the machine to a file 
         $filename  = 'secpol.inf'
-        $secpol = $null = SecEdit.exe /export /cfg $filename
-        $secpol = Get-Content $filename
-
+        $null = SecEdit.exe /export /cfg $filename
         $lsps = @('SeManageVolumePrivilege', 'SeServiceLogonRight', 'SeAssignPrimaryTokenPrivilege ', 'SeChangeNotifyPrivilege', 'SeLockMemoryPrivilege', 'SeIncreaseQuotaPrivilege', 'SeIncreaseBasePriorityPrivilege', 'SeIncreaseWorkingSetPrivilege')
     }
     Process {
-		if($serverInstance -contains '\') {$serverInstance= $serverInstance.Split('\')[0]}
-        Write-Verbose -Message "Getting wWindow priliedges on $serverInstance"
+        $serverName = $serverInstance.Split('\')[0]
+        $instanceName = $serverInstance.Split('\')[1]
+
+        if ($instanceName -eq $null) 
+        {
+            $search = 'MSSQLSERVER'
+        }
+        else 
+        {
+            $search = "MSSQL`$$instanceName" 
+        }
+
+        $query = "SELECT * FROM Win32_Service where name like `"$search`""
+        
+        Write-Verbose -Message "Getting Window priliedges on $serverInstance"
         # Find out the SQL Server services installed on the machine
         if(!($ServiceAccounts)) 
         {
-            $SqlService = (Get-WmiObject -ComputerName $serverInstance -Query "SELECT * FROM Win32_Service WHERE PathName LIKE '%sqlservr%'").StartName
+            $SqlService = (Get-WmiObject -ComputerName $serverName -Query $query).StartName
         }
         else 
         {
@@ -67,7 +77,7 @@ Function Get-SQLPriviledges
             {
                 # Find out the SID value of the service account
                 $objUser = New-Object -TypeName System.Security.Principal.NTAccount -ArgumentList ($sid)
-                $strSID = $objUser.Translate([System.Security.Principal.SecurityIdentifier])
+                $strSID = $objUser.Translate([Security.Principal.SecurityIdentifier])
             }
             catch
             {
@@ -108,6 +118,6 @@ Function Get-SQLPriviledges
     }
     end {
         # Remove the file
-        Remove-Item $filename
+        Remove-Item -Path $filename
     }
 }
