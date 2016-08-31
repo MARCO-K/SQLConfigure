@@ -1,23 +1,19 @@
-﻿#requires -Version 3
-function Test-SqlStartupParameter
+#requires -Version 3
+function Get-SqlStartupParameter
 {
   <#
       .SYNOPSIS
-      Test a StartupParameter for a SQL instance.
+      Gets StartupParameters for a SQL instance.
 
       .DESCRIPTION
-      This function will test if a given StartupParameters for a SQL instance is set in registry.
+      This function will query the registry on a computer and return the StartupParameters for a SQL instance.
 
       .PARAMETER serverInstance
       This is the name of the source instance. 
       It's a mandatory parameter beause it is needed to retrieve the data.
       
-      .PARAMETER startparameter
-      This is paramter value which will be tested. 
-      It's a mandatory parameter besause it is needed to retrieve the data.
-      
       .OUTPUT
-      True or false if startparamter exists. 
+      Custom object with StartupParameters. 
 
       .EXAMPLE
       Get-SqlStartupParameter -serverInstance 'server\instance'
@@ -28,9 +24,7 @@ function Test-SqlStartupParameter
   [CmdletBinding()]
   param(
     [Parameter(Mandatory,ValuefromPipeline = $true,ValueFromPipelineByPropertyName = $true)]
-    [String]$serverInstance,
-    [Parameter(Mandatory, ValuefromPipeline = $true, ValueFromPipelineByPropertyName = $true)][string]$startparameter
-  )
+  [String]$serverInstance)
     
   begin {
     $HKLM = 2147483650
@@ -62,14 +56,7 @@ function Test-SqlStartupParameter
       Select-Object -Property Name, Value |
       Sort-Object -Property Name
 
-      if ($params.Value -contains $startparameter)
-      {
-        return $true
-      }
-      else 
-      {
-        return $false 
-      }
+      $params
     }
     catch
     {
@@ -82,7 +69,5 @@ function Test-SqlStartupParameter
       }
     }
   }
-  end {
-    Write-Verbose -Message "SqlStartupParameter collected on `"$serverInstance`"." 
-  }
+  end { Write-Verbose -Message "SqlStartupParameter collected on `"$serverInstance`"." }
 }

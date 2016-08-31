@@ -1,51 +1,86 @@
 ﻿#requires -Version 3
 function Add-SqlStartupParameter
 {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory,ValuefromPipeline = $true,ValueFromPipelineByPropertyName = $true)]
-        [String]$serverInstance,
-    [string[]]$StartupParameters)
+  <#
+      .SYNOPSIS
+      Adds a new StartupParameters for a SQL instance.
 
-    begin {}
-    process 
-    {
-            $serverName = $ServerInstance.Split('\')[0]
-            $instanceName = $ServerInstance.Split('\')[1]
+      .DESCRIPTION
+      This function will add a new StartupParameter to the registry on a computer.
 
-            if ($instanceName -eq $null) 
-            {
-                $instanceName = 'MSSQLSERVER'
-            } 
+      .PARAMETER serverInstance
+      This is the name of the source instance. 
+      It's a mandatory parameter beause it is needed to retrieve the data.
+      
+      .PARAMETER StartParameters
+      This is a list of paramter values which will be added. 
+      It's a mandatory parameter.
 
-        $reg = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine', $serverName)
+      .OUTPUT
+      Custom object with StartupParameters. 
 
-        $regKey = $reg.OpenSubKey('SOFTWARE\\Microsoft\\Microsoft SQL Server\\Instance Names\\SQL' )
+      .EXAMPLE
+      Add-SqlStartupParameter -serverInstance 'server\instance' -StartParameters '-T1118' -Verbose
+      .LINK
+      .NOTES
+  #>
+  
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory,ValuefromPipeline = $true,ValueFromPipelineByPropertyName = $true)][String]$serverInstance,
+    [string[]]$StartParameters = ''
+  )
 
-        foreach($instance in $regKey.GetValueNames())
-        {    
-            if($instance -eq $InstanceName)
-            { 
-                $instanceRegName = $regKey.GetValue($instance)
+  begin {
+    $HKLM = 2147483650
+    $reg = [wmiclass]'\\.\root\default:StdRegprov'
+    $key = 'SOFTWARE\Microsoft\Microsoft SQL Server\Instance Names\SQL'
+  }
+  process 
+  {
+    try 
+    { 
+      $serverName = $serverInstance.Split('\')[0]
+      $instanceName = $serverInstance.Split('\')[1]
+
+      if ($instanceName -eq $null) 
+      {
+        $instanceName = 'MSSQLSERVER'
+      } 
+
+      $instanceRegName = $reg.GetStringValue($HKLM, $key, $instanceName).sValue
+
             
-                $parametersKey = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$instanceRegName\MSSQLServer\Parameters"
+      $parametersKey = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$instanceRegName\MSSQLServer\Parameters"
 
-                $props = (Get-Item $parametersKey).GetValueNames()
+      $props = (Get-Item $parametersKey).GetValueNames()
 
-                $argNumber = $props.Count
+      $argNr = $props.Count
 
-                foreach($param in $StartupParameters)
-                {
-                    Write-Host -Object "Adding Startup Argument:$argNumber"
+     
+      if($StartParameters) 
+      { 
+        foreach($parameter in $StartParameters)
+        {
+          $newKey = 'SQLArg'+($argNr) 
+          Write-Verbose -Message "Adding StartupParameter $parameter"
+          Set-ItemProperty -Path $parametersKey -Name $newKey -Value $parameter
 
-                    $newRegProp = 'SQLArg'+($argNumber) 
-            
-                    Set-ItemProperty -Path $parametersKey -Name $newRegProp -Value $param
-
-                    $argNumber = $argNumber + 1
-                }
-            }
+          $argNr = $argNr + 1
         }
+      }
     }
-    end {}
+    
+    catch
+    {
+      Write-Error -Message $Error[0]
+      $err = $_.Exception
+      while ( $err.InnerException ) 
+      {
+        $err = $err.InnerException
+        Write-Output -InputObject $err.Message
+      }
+    }
+  }
+  end { Write-Verbose -Message "SqlStartupParameter collected on `"$serverInstance`"." }
 }
