@@ -1,6 +1,6 @@
-﻿#requires -Version 3
-function Test-SqlStartupParameter
+﻿function Test-SQLStartupParameter
 {
+  #requires -Version 3.0
   <#
       .SYNOPSIS
       Test a StartupParameter for a SQL instance.
@@ -25,11 +25,10 @@ function Test-SqlStartupParameter
       .NOTES
   #>
   
-  [CmdletBinding()]
   param(
-    [Parameter(Mandatory,ValuefromPipeline = $true,ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory,ValuefromPipeline,ValueFromPipelineByPropertyName)]
     [String]$serverInstance,
-    [Parameter(Mandatory, ValuefromPipeline = $true, ValueFromPipelineByPropertyName = $true)][string]$startparameter
+    [Parameter(Mandatory, ValuefromPipeline, ValueFromPipelineByPropertyName)][string]$startparameter
   )
     
   begin {
@@ -53,7 +52,7 @@ function Test-SqlStartupParameter
 
       $parametersKey = "HKLM:\SOFTWARE\Microsoft\Microsoft SQL Server\$instanceRegName\MSSQLServer\Parameters"
 
-      $props = Get-ItemProperty $parametersKey
+      $props = Get-ItemProperty -Path $parametersKey
 
       $params = $props.psobject.properties |
       Where-Object -FilterScript {
@@ -68,7 +67,7 @@ function Test-SqlStartupParameter
       }
       else 
       {
-        return $false 
+        return $false
       }
     }
     catch

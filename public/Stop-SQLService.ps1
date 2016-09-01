@@ -17,8 +17,8 @@
 #> 
 function Stop-SQLService {
   param (
-    [Parameter(Mandatory=$true,ValueFromPipeline=$true)][ValidateNotNullOrEmpty()][string]$ServerInstance,
-    [Parameter(Mandatory=$true,ValueFromPipeline=$true)][ValidateSet( 'sql','agent','browser')][String[]]$services
+    [Parameter(Mandatory,ValueFromPipeline=$true)][ValidateNotNullOrEmpty()][string]$ServerInstance,
+    [Parameter(Mandatory,ValueFromPipeline=$true)][ValidateSet( 'sql','agent','browser')][String[]]$services
   )
   begin {
     $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
