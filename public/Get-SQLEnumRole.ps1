@@ -14,8 +14,11 @@ function Get-SQLEnumRole
             .PARAMETER nosystem
             This switch controls if build-in logins and roles for system databases will be returned.
 
+            .PARAMETER serverrole
+            This switch controls if server-lervel roles will be returned.
+
             .EXAMPLE
-            Get-SQLEnumRole -ServerInstance server\instance -nosystem
+            Get-SQLEnumRole -ServerInstance server\instance -nosystem -serverrole
 
             .NOTES
             .LINK
@@ -27,7 +30,9 @@ function Get-SQLEnumRole
 
     param (
         [Parameter(Mandatory,ValueFromPipeline)][string]$ServerInstance,
-    [Parameter(ValueFromPipeline)][switch]$nosystem )
+        [Parameter(ValueFromPipeline)][switch]$nosystem,
+        [Parameter(ValueFromPipeline)][switch]$serverrole
+    )
     
     begin {
         $null = [reflection.assembly]::LoadWithPartialName('Microsoft.SqlServer.Smo')
@@ -40,7 +45,7 @@ function Get-SQLEnumRole
         if($nosystem) 
         {
             $logins = $server.Logins | Where-Object -FilterScript {
-                $_.IsSystemObject -ne $true -and $_.Name -notlike '##*' -and $_.Name -notlike "$serverName*" 
+                $_.IsSystemObject -ne $true -and $_.Name -notlike '##*' -and $_.Name -notlike 'NT *' -and $_.Name -notlike "$serverName*" 
             }
             $databases = $server.Databases |Where-Object -FilterScript {
                 $_.IsSystemObject -ne $true 
@@ -59,8 +64,22 @@ function Get-SQLEnumRole
             {
                 $username = $login.Name
 
-
-
+                if($serverrole) 
+                {
+                    foreach($role in $server.Roles)
+                    {
+                        $RoleMembers = $role.EnumMemberNames()
+                                   
+                        if($RoleMembers -contains $username)
+                        {
+                            New-Object -TypeName PSObject -Property ([Ordered]@{
+                                    'Login'  = $login
+                                    'Database' = '[server role]'
+                                    'Role'   = $role
+                            })
+                        }
+                    }
+                }
 
                 foreach($database in $databases)
                 {
