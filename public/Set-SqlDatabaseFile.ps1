@@ -28,7 +28,7 @@
 
         .PARAMETER count
 
-        This parameter sets the number of total dat file for a database.
+        This parameter sets the number of total data file for a database.
         If the number of files is already greater or equal to the count nothing is done.
 
         .PARAMETER growth
