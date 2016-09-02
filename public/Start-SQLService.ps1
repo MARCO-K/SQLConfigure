@@ -1,68 +1,112 @@
-<#
-    .SYNOPSIS
-    Start-SQLService
-    .DESCRIPTION
-    Start SQL Server service
-    .PARAMETER serverInstance
-    This is the name of the source instance. It's a mandatory parameter beause it is needed to retrieve the data.
-    .PARAMETER services
-    This is one or more services to be stopped. 
-    Possible values are: 'sql','agent','browser'.
-    .EXAMPLE
-    Start-SQLService -serverInstance Server\Instance -services 'sql'
-    .INPUTS
-    .OUTPUTS
-    .NOTES
-    .LINK
-#> 
-function Start-SQLService {
+#requires -Version 3.0
+function Start-SQLService 
+{
+  <#
+      .SYNOPSIS
+      Start-SQLService
+
+      .DESCRIPTION
+      Start SQL Server service
+
+      .PARAMETER serverInstance
+      This is the name of the source instance. It's a mandatory parameter beause it is needed to retrieve the data.
+
+      .PARAMETER services
+      This is one or more services to be stopped. 
+      Possible values are: 'sql','agent','browser'.
+
+      .EXAMPLE
+      Start-SQLService -serverInstance Server\Instance -services 'sql'
+
+      .INPUTS
+      .OUTPUTS
+      .NOTES
+      .LINK
+  #> 
+
   param (
-    [Parameter(Mandatory=$true,ValueFromPipeline=$true)][ValidateNotNullOrEmpty()][string]$ServerInstance,
-    [Parameter(Mandatory=$true,ValueFromPipeline=$true)][ValidateSet( 'sql','agent','browser')][String[]]$services
+    [Parameter(Mandatory,ValueFromPipeline)][ValidateNotNullOrEmpty()][string]$ServerInstance,
+    [Parameter(Mandatory,ValueFromPipeline)][ValidateSet( 'sql','agent','browser')][String[]]$services
   )
   begin {
-    $null = [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO')
-    $Server = New-Object Microsoft.SqlServer.Management.Smo.Server $serverInstance
-    $ver = $Server.Information.VersionMajor 
 
-    $serverName = $serverInstance.Split('\')[0]
-    $instance = $serverInstance.Split('\')[1]
 
-    if ($instance -eq $null) {
-      $instance = 'MSSQLSERVER'
-    } 
+
   }
 
   process {
-    try {
-      foreach ($service in $services) {   
+    try 
+    {
+      foreach ($service in $services) 
+      {
+        $serverName = $ServerInstance.Split('\')[0]
+        $instance = $ServerInstance.Split('\')[1]
+
+        if ($instance -eq $null) 
+        {
+          $instance = 'MSSQLSERVER'
+        }   
         switch ($service)
         {
-          'agent' { if ($instance -eq  'MSSQLSERVER') { $searchstrg = 'SQLSERVERAGENT' } else { $searchstrg = 'SQLAgent$' + $instance }}
-          'sql'   { if ($instance -eq 'MSSQLSERVER') { $searchstrg = $instance } else { $searchstrg = 'MSSQL$' + $instance }}
-          'browser'  { $searchstrg = 'SQLBrowser'}
+          'agent' 
+          {
+            if ($instance -eq 'MSSQLSERVER') 
+            {
+              $searchstrg = 'SQLSERVERAGENT' 
+            }
+            else 
+            {
+              $searchstrg = 'SQLAgent$' + $instance 
+            }
+          }
+          'sql'   
+          {
+            if ($instance -eq 'MSSQLSERVER') 
+            {
+              $searchstrg = $instance 
+            }
+            else 
+            {
+              $searchstrg = 'MSSQL$' + $instance 
+            }
+          }
+          'browser'  
+          {
+            $searchstrg = 'SQLBrowser'
+          }
         }
-        $SqlService = Get-Service | Where-Object {$_.name -like $searchstrg }	
+        $SqlService = Get-Service | Where-Object -FilterScript {
+          $_.name -like $searchstrg 
+        }	
         $ServiceName = $SqlService.Name
-        if($SqlService.Status -eq 'Stopped') {
-          write-verbose "Starting service $ServiceName..."
+        if($SqlService.Status -eq 'Stopped') 
+        {
+          Write-Verbose -Message ('Starting service {0}...' -f $ServiceName)
           Start-Service -InputObject $SqlService
           $SqlService.WaitForStatus('Running')
-          $SqlService.DependentServices | foreach-object {start-Service -Inputobject $_}
+          $SqlService.DependentServices | ForEach-Object -Process {
+            Start-Service -InputObject $_
+          }
           $SqlService.WaitForStatus('Running')
-          write-verbose "Service $ServiceName is running"
+          Write-Verbose -Message ('Service {0} is running' -f $ServiceName)
         }
-        else { write-verbose "Service $ServiceName is already running" }
+        else 
+        {
+          Write-Verbose -Message ('Service {0} is already running' -f $ServiceName) 
+        }
       }
     }
-    catch{
-      Write-Error $Error[0]
+    catch
+    {
+      Write-Error -Message $Error[0]
       $err = $_.Exception
-      while ( $err.InnerException ) {
+      while ( $err.InnerException ) 
+      {
         $err = $err.InnerException
-        Write-Output $err.Message
+        Write-Output -InputObject $err.Message
       }
     }
   }
-  end { $message = "Starting service on `"$servername`".";  }
+  end { Write-Verbose -Message ('Starting service on {0}.' -f $serverName)
+  }
 }
